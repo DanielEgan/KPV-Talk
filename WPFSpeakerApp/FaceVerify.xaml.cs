@@ -25,31 +25,14 @@ namespace WPFSpeakerApp
     /// <summary>
     /// Interaction logic for Face.xaml
     /// </summary>
-    public partial class FaceVerify : Window , INotifyPropertyChanged 
+    public partial class FaceVerify : Window 
     {
 
-        private ObservableCollection<Face> _rightResultCollection = new ObservableCollection<Face>();
-        private string _verifyResult;
+        private ObservableCollection<Face> _foundFaceCollection = new ObservableCollection<Face>();
         public string FullResult;
 
-        public event PropertyChangedEventHandler PropertyChanged;
 
-        public string VerifyResult
-        {
-            get
-            {
-                return _verifyResult;
-            }
 
-            set
-            {
-                _verifyResult = value;
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("VerifyResult"));
-                }
-            }
-        }
 
         public FaceVerify()
         {
@@ -64,7 +47,6 @@ namespace WPFSpeakerApp
         private void Face_Loaded(object sender, RoutedEventArgs e)
         {
             StartCamera();
-            //LeftImageDisplay.Source = new BitmapImage(new Uri("WPFSpeakerApp;component/Assets/daniel-egan.jpg"));
         }
 
         private void InitializeComboBox()
@@ -77,6 +59,7 @@ namespace WPFSpeakerApp
                 
             }
         }
+
         private void StartCamera()
         {
             var cameraId = (WebCameraId)comboBox.SelectedItem;
@@ -84,94 +67,92 @@ namespace WPFSpeakerApp
 
         }
 
-        private void LeftImagePicker_Click(object sender, RoutedEventArgs e)
-        {
 
-        }
-
-        /// <summary>
-        /// Gets face detection results for image on the right
-        /// </summary>
-        public ObservableCollection<Face> RightResultCollection
+        public ObservableCollection<Face> FoundFaceCollection
         {
             get
             {
-                return _rightResultCollection;
+                return _foundFaceCollection;
             }
         }
 
         private async void Verification_Click(object sender, RoutedEventArgs e)
         {
-
-            VerifyResult = string.Empty;
             //Create image from Video
-            webCameraControl.GetCurrentImage().Save("C:\\Users\\danie\\Documents\\Visual Studio 2015\\Projects\\WPFSpeakerApp\\WPFSpeakerApp\\Pics\\picture.bmp");
+            string root = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            var imagePath= System.IO.Path.Combine(root, "../../Pics");
+            var pickedImagePath = imagePath + "picture.bmp";
+            webCameraControl.GetCurrentImage().Save(pickedImagePath);
+           
 
-            // User already picked one image
-            var pickedImagePath = "C:\\Users\\danie\\Documents\\Visual Studio 2015\\Projects\\WPFSpeakerApp\\WPFSpeakerApp\\Pics\\picture.bmp";
+            // User already picked one image      
             var imageInfo = UIHelper.GetImageInfoForRendering(pickedImagePath);
-            //RightImageDisplay.Source = new BitmapImage(new Uri(pickedImagePath));
 
             // Clear last time detection results
-            RightResultCollection.Clear();
+            FoundFaceCollection.Clear();
 
-            //show this somewhere
-            //MainWindow.Log("Request: Detecting in {0}", pickedImagePath);
-            var sw = Stopwatch.StartNew();
+            //Write to screen
+            Log(String.Format("Request: Detecting in {0}", pickedImagePath));
 
-            // Call detection REST API, detect faces inside the image
+            // Create a filestream to read faces in images
             using (var fileStream = File.OpenRead(pickedImagePath))
             {
                 try
                 {
-
+                    //subscription key
                     string subscriptionKey = "c3c69602aecd442987f68ba9447a7be0";
 
+                    //initialize service
                     var faceServiceClient = new FaceServiceClient(subscriptionKey);
 
+                    //detect faces ( could be more than one ) 
                     var faces = await faceServiceClient.DetectAsync(fileStream);
 
-                    // Handle REST API calling error
+                    // If it does not find any faces
+                    // right now program crashes if no faces
                     if (faces == null)
                     {
+                        Log("No Faces were found in picture" );
                         return;
                     }
 
+                    //Write to screen
                     Log(String.Format("Response: Success. Detected {0} face(s) in {1}", faces.Length, pickedImagePath));
 
-                    // Convert detection results into UI binding object for rendering
+                    // calc rectange for face
                     foreach (var face in UIHelper.CalculateFaceRectangleForRendering(faces, MaxImageSize, imageInfo))
                     {
-                        // Detected faces are hosted in result container, will be used in the verification later
-                        RightResultCollection.Add(face);
+                        // Add faces to face collection
+                        FoundFaceCollection.Add(face);
                     }
                 }
                 catch (FaceAPIException ex)
                 {
+                    //Write to screen
                     Log(String.Format("Response: {0}. {1}", ex.ErrorCode, ex.ErrorMessage));
 
                     return;
                 }
             }
 
-
+            // This on is already stored on the service
             var faceId1 = "5d77c990-f771-4663-ace0-9f855a79a933";
-            var faceId2 = RightResultCollection[0].FaceId;
+            var faceId2 = FoundFaceCollection[0].FaceId;
+
 
             Log(String.Format("Request: Verifying face {0} and {1}", faceId1, faceId2));
 
-            // Call verify REST API with two face id
+
+            // Call verify passing in faceIDs
             try
             {
-                MainWindow mainWindow = Window.GetWindow(this) as MainWindow;
+                //subscription API key
                 string subscriptionKey = "c3c69602aecd442987f68ba9447a7be0";
 
                 var faceServiceClient = new FaceServiceClient(subscriptionKey);
                 var res = await faceServiceClient.VerifyAsync(Guid.Parse(faceId1), Guid.Parse(faceId2));
 
                 // Verification result contains IsIdentical (true or false) and Confidence (in range 0.0 ~ 1.0),
-                // here we update verify result on UI by VerifyResult binding
-                VerifyResult = string.Format("{0} ({1:0.0})", res.IsIdentical ? "Equals" : "Does not equal", res.Confidence);
                 FullResult = string.Format("Response: Success. Face {0} and {1} {2} to the same person", faceId1, faceId2, res.IsIdentical ? "belong" : "not belong");
                 Log(FullResult);
                 decimal confidence = Convert.ToDecimal(res.Confidence) * 100;
@@ -209,11 +190,6 @@ namespace WPFSpeakerApp
             _logTextBox.Text = "";
         }
 
-        private void RightImagePicker_Click(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
         private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
@@ -229,10 +205,10 @@ namespace WPFSpeakerApp
 
         private void btnVoice_Click(object sender, RoutedEventArgs e)
         {
-            var newForm = new MainWindow(); //create your new form.
+            var newForm = new MainWindow(); //create  new window.
             this.Visibility = Visibility.Hidden;
-            newForm.Show(); //show the new form.
-            this.Close(); //only if you want to close the current form.
+            newForm.Show(); //show  new form.
+            this.Close(); //close the current window.
         }
     }
 }

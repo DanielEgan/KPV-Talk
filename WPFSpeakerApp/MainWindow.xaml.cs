@@ -37,12 +37,16 @@ namespace WPFSpeakerApp
         public MainWindow()
         {
             InitializeComponent();
+            //we need subscription and speaker ID to send to service
             _subscriptionKey = "5e29fb937bcb42698c1d6a3d69789a0f";
             _speakerId = new Guid( "1470311b-5ead-4311-bce6-d4688959b911");
-            initializeRecorder();
-            _serviceClient = new SpeakerVerificationServiceClient(_subscriptionKey);
-            //userPhraseTxt.Text = userPhrase;
 
+            //initialize _waveIn recorder
+            initializeRecorder();
+
+            _serviceClient = new SpeakerVerificationServiceClient(_subscriptionKey);
+
+            //disable stop button
             stopRecordBtn.IsEnabled = false;
         }
 
@@ -65,6 +69,8 @@ namespace WPFSpeakerApp
             //Dispose recorder object
             _waveIn.Dispose();
             initializeRecorder();
+
+            //when recording is done we send the stream to cognitive services
             verifySpeaker(_stream);
         }
 
@@ -76,7 +82,7 @@ namespace WPFSpeakerApp
                 _stream = new IgnoreDisposeStream(new MemoryStream());
                 _fileWriter = new WaveFileWriter(_stream, _waveIn.WaveFormat);
             }
-            _fileWriter.WriteData(e.Buffer, 0, e.BytesRecorded);
+            _fileWriter.Write(e.Buffer, 0, e.BytesRecorded);
         }
 
         private async void verifySpeaker(Stream audioStream)
@@ -90,6 +96,7 @@ namespace WPFSpeakerApp
                 statusResTxt.Text = "Verification Done, Elapsed Time: " + sw.Elapsed;
                 statusResTxt.Text = response.Result.ToString();
                 confTxt.Text = response.Confidence.ToString();
+
                 if (response.Result == Result.Accept)
                 {
                     statusResTxt.Background = Brushes.Green;
