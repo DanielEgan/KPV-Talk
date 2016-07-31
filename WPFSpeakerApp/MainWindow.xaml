@@ -8,17 +8,18 @@
         Title="MainWindow" Height="700" Width="1200">
 
     <Grid>
-        <Button x:Name="recordBtn" Content="Record" HorizontalAlignment="Left" Margin="56,408,0,0" VerticalAlignment="Top" Width="164" Click="recordBtn_Click_1"/>
-        <Button x:Name="stopRecordBtn" Content="Stop Recording" HorizontalAlignment="Left" Margin="254,408,0,0" VerticalAlignment="Top" Width="137" Click="stopRecordBtn_Click_1"/>
-        <Label x:Name="confidenceLbl" Content="Confidence Level" HorizontalAlignment="Left" Margin="56,217,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="statusLbl" Content="Status" HorizontalAlignment="Left" Margin="56,165,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="confTxt"  IsEnabled="False" HorizontalAlignment="Left" Height="24" Margin="56,244,0,0" TextWrapping="Wrap" Text="Confidence Level" VerticalAlignment="Top" Width="335"/>
+        <Button x:Name="recordBtn" Content="Record" HorizontalAlignment="Left" Margin="56,397,0,0" VerticalAlignment="Top" Width="164" Click="recordBtn_Click_1" Height="68" Background="#FF20EA20" FontSize="32"/>
+        <Button x:Name="stopRecordBtn" Content="Stop" HorizontalAlignment="Left" Margin="227,397,0,0" VerticalAlignment="Top" Width="164" Click="stopRecordBtn_Click_1" Height="68" Background="#FF20EA20" FontSize="32"/>
+        <Label x:Name="confidenceLbl" HorizontalContentAlignment="Center" Content="How Confident are you?" HorizontalAlignment="Left" Margin="56,217,0,0" VerticalAlignment="Top" FontFamily="Palatino Linotype" FontSize="16" Width="335"/>
+        <Label x:Name="statusLbl" HorizontalContentAlignment="Center" Content="Status" HorizontalAlignment="Left" Margin="56,165,0,0" VerticalAlignment="Top" FontFamily="Palatino Linotype" FontSize="16" Width="335"/>
+        <TextBox x:Name="confTxt"  IsEnabled="False" HorizontalAlignment="Left" Height="24" Margin="56,254,0,0" TextWrapping="Wrap" Text="Confidence Level" VerticalAlignment="Top" Width="335"/>
         <TextBox x:Name="statusResTxt" IsEnabled="False" HorizontalAlignment="Left" Height="24" Margin="56,192,0,0" TextWrapping="Wrap" Text="Verification Status" VerticalAlignment="Top" Width="335" />
-        <Label x:Name="userPhrase" Content="Your Verification Phrase" HorizontalAlignment="Left" Margin="56,339,0,0" VerticalAlignment="Top" Width="335"/>
-        <TextBox x:Name="userPhraseTxt" Text="My Voice is my passport verify me" HorizontalAlignment="Left" Height="23" Margin="56,366,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="335" IsEnabled="False"/>
+        <Label x:Name="userPhrase" HorizontalContentAlignment="Center" Content="Your Verification Phrase" HorizontalAlignment="Left" Margin="56,332,0,0" VerticalAlignment="Top" Width="335" FontFamily="Palatino Linotype" FontSize="16"/>
+        <TextBox x:Name="userPhraseTxt" Text="My Voice is my passport verify me" HorizontalAlignment="Left" Height="23" Margin="56,369,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="335" IsEnabled="False"/>
         <Image Source="/Assets/KPVLogoSmall.png" x:Name="image" HorizontalAlignment="Left" Height="100" Margin="56,35,0,0" VerticalAlignment="Top" Width="772"/>
-        <TextBlock x:Name="tbVerified" HorizontalAlignment="Left" Margin="593,146,0,0" TextWrapping="Wrap" Text="Verified" VerticalAlignment="Top" Height="97" Width="571" FontSize="64" Background="#FF20EA20"/>
+        <TextBlock TextAlignment="Center" x:Name="tbVerified" HorizontalAlignment="Left" Margin="593,140,0,0" TextWrapping="Wrap" Text="Not Verified" VerticalAlignment="Top" Height="97" Width="508" FontSize="64" Background="#FFEA2920"/>
         <Image Source="/Images/04.png" x:Name="imgKid" HorizontalAlignment="Left" Height="312" Margin="737,248,0,0" VerticalAlignment="Top" Width="250"/>
+        <Border BorderBrush="Black" BorderThickness="1" HorizontalAlignment="Left" Height="477" Margin="593,140,0,0" VerticalAlignment="Top" Width="508"/>
 
     </Grid>
 </Window>

@@ -42,8 +42,6 @@ namespace WPFSpeakerApp
             initializeRecorder();
             _serviceClient = new SpeakerVerificationServiceClient(_subscriptionKey);
             //userPhraseTxt.Text = userPhrase;
-            imgKid.Visibility = Visibility.Hidden;
-            tbVerified.Visibility = Visibility.Hidden;
 
             stopRecordBtn.IsEnabled = false;
         }
@@ -96,8 +94,8 @@ namespace WPFSpeakerApp
                 {
                     statusResTxt.Background = Brushes.Green;
                     statusResTxt.Foreground = Brushes.White;
-                    tbVerified.Visibility = Visibility.Visible;
-                    imgKid.Visibility = Visibility.Visible;
+                    tbVerified.Background = Brushes.Green;
+                    tbVerified.Text = "Verified";
                 }
                 else
                 {
