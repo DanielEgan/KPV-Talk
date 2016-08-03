@@ -75,8 +75,9 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
-    <Reference Include="WebEye.Controls.Wpf.WebCameraControl">
-      <HintPath>..\..\..\..\..\Downloads\WpfSources\WebCameraDemo\packages\WebEye.Controls.Wpf.WebCameraControl.1.0.0.0\lib\net40\WebEye.Controls.Wpf.WebCameraControl.dll</HintPath>
+    <Reference Include="WebEye.Controls.Wpf.WebCameraControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebEye.Controls.Wpf.WebCameraControl.1.0.0.0\lib\net40\WebEye.Controls.Wpf.WebCameraControl.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />

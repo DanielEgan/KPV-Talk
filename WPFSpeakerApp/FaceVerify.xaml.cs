@@ -136,7 +136,7 @@ namespace WPFSpeakerApp
             }
 
             // This on is already stored on the service
-            var faceId1 = "5d77c990-f771-4663-ace0-9f855a79a933";
+            var faceId1 = "bc0440c9-4d5e-435e-a345-d3a7c36cafce";
             var faceId2 = FoundFaceCollection[0].FaceId;
 
 
