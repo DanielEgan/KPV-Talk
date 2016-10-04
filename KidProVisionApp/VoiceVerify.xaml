@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:KidProVision"
         mc:Ignorable="d"
-        Title="VoiceVerify" Height="350" Width="525" WindowState="Maximized" Loaded="WindowLoaded">
+        Title="VoiceVerify" Height="350" Width="525" WindowState="Maximized" >
 
     <Window.Resources>
         <LinearGradientBrush x:Key="WindowGradient" StartPoint="0,0.3" EndPoint="1,0">

@@ -18,6 +18,7 @@ namespace KidProVision
     /// </summary>
     public partial class VoiceEnroll : Window
     {
+        //TALK - 08 - Enrolling Voice
         private string _subscriptionKey;
         private Guid _speakerId = Guid.Empty;
         private int _remainingEnrollments;
@@ -36,18 +37,41 @@ namespace KidProVision
         /// <param name="subscriptionKey">The subscription key</param>
         public VoiceEnroll()
         {
+            //TALK - 09 Connecting to services and init
             InitializeComponent();
-            _subscriptionKey = "5e29fb937bcb42698c1d6a3d69789a0f";
+            //You will need to create an environment variable with your subscription key
+            //or just add it here if you are not putting this in source control
+            //_subscriptionKey = <my subscription key>
+            _subscriptionKey = Environment.GetEnvironmentVariable("VoiceSubscriptionKey");
             _serviceClient = new SpeakerVerificationServiceClient(_subscriptionKey);
             initializeRecorder();
             initializeSpeaker();
         }
 
+
+        /// <summary>
+        /// Initialize NAudio recorder instance
+        /// </summary>
+        private void initializeRecorder()
+        {
+            //TALK - 10 initializing NAudio.net stuff
+            _waveIn = new WaveIn();
+            _waveIn.DeviceNumber = 0;
+            //These files need to be 16 kHz and mono for the service 
+            int sampleRate = 16000; // 16 kHz
+            int channels = 1; // mono
+            _waveIn.WaveFormat = new WaveFormat(sampleRate, channels);
+
+            //Event hooks 
+            _waveIn.DataAvailable += waveIn_DataAvailable;
+            _waveIn.RecordingStopped += waveSource_RecordingStopped;
+        }
         /// <summary>
         /// Initialize the speaker information
         /// </summary>
         private async void initializeSpeaker()
         {
+            //TALK - 11 Pulling saved data
             IsolatedStorageHelper _storageHelper = IsolatedStorageHelper.getInstance();
             string _savedSpeakerId = _storageHelper.readValue(SPEAKER_FILENAME);
             if (_savedSpeakerId != null && _savedSpeakerId != "Empty")
@@ -78,19 +102,7 @@ namespace KidProVision
 
         }
 
-        /// <summary>
-        /// Initialize NAudio recorder instance
-        /// </summary>
-        private void initializeRecorder()
-        {
-            _waveIn = new WaveIn();
-            _waveIn.DeviceNumber = 0;
-            int sampleRate = 16000; // 16 kHz
-            int channels = 1; // mono
-            _waveIn.WaveFormat = new WaveFormat(sampleRate, channels);
-            _waveIn.DataAvailable += waveIn_DataAvailable;
-            _waveIn.RecordingStopped += waveSource_RecordingStopped;
-        }
+
 
         /// <summary>
         /// A listener called when the recording stops
@@ -99,12 +111,14 @@ namespace KidProVision
         /// <param name="e">A set of arguments sent to the listener</param>
         private void waveSource_RecordingStopped(object sender, StoppedEventArgs e)
         {
+            //TALK - 12 End Recording and send file
             _fileWriter.Dispose();
             _fileWriter = null;
             _stream.Seek(0, SeekOrigin.Begin);
             //Dispose recorder object
             _waveIn.Dispose();
             initializeRecorder();
+            //send to enroll speaker to analize
             enrollSpeaker(_stream);
         }
 
@@ -130,17 +144,27 @@ namespace KidProVision
         /// <param name="audioStream">The audio stream</param>
         private async void enrollSpeaker(Stream audioStream)
         {
+            //TALK - 13 Send wav to services
             try
             {
+                //Used just for visuals on page
                 Stopwatch sw = Stopwatch.StartNew();
+
+                //Call service using speakerID and wave file stream
                 Enrollment response = await _serviceClient.EnrollAsync(audioStream, _speakerId);
                 sw.Stop();
+
+                //how many enrollments do I have (need a minimum of 3)
                 _remainingEnrollments = response.RemainingEnrollments;
                 setStatus("Enrollment Done, Elapsed Time: " + sw.Elapsed);
+
+                //saving phrase used local in order to show user
                 verPhraseText.Text = response.Phrase;
                 setStatus("Your phrase: " + response.Phrase);
                 setUserPhrase(response.Phrase);
                 remEnrollText.Text = response.RemainingEnrollments.ToString();
+
+                //If we have three we allow them to go to verify
                 if (response.RemainingEnrollments == 0)
                 {
                     MessageBox.Show("You have now completed the minimum number of enrollments. You may perform verification or add more enrollments", "Speaker enrolled");
@@ -176,6 +200,7 @@ namespace KidProVision
         /// <param name="e">Event arguments object</param>
         private void record_Click(object sender, RoutedEventArgs e)
         {
+            //TALK - 14 - Started with button clicks
             record.IsEnabled = false;
             stopRecord.IsEnabled = true;
             _waveIn.StartRecording();

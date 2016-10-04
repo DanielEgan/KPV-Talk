@@ -37,10 +37,13 @@ namespace KidProVision
 
         public VoiceVerify()
         {
-           
+           //TALK - 15 Initialize and set service key
             InitializeComponent();
             //we need subscription and speaker ID to send to service
-            _subscriptionKey = "5e29fb937bcb42698c1d6a3d69789a0f";
+            //You will need to create an environment variable with your subscription key
+            //or just add it here if you are not putting this in source control
+            //_subscriptionKey = <my subscription key>
+            _subscriptionKey = Environment.GetEnvironmentVariable("VoiceSubscriptionKey");
 
             //Look to see if speakerID already exists
             IsolatedStorageHelper _storageHelper = IsolatedStorageHelper.getInstance();
@@ -70,6 +73,7 @@ namespace KidProVision
 
         private void initializeRecorder()
         {
+            //TALK - 16 Initialize wav file
             _waveIn = new WaveIn();
             _waveIn.DeviceNumber = 0;
             int sampleRate = 16000; // 16 kHz
@@ -81,6 +85,7 @@ namespace KidProVision
 
         private void waveSource_RecordingStopped(object sender, StoppedEventArgs e)
         {
+            //TALK - 17 Call verify speaker
             _fileWriter.Dispose();
             _fileWriter = null;
             _stream.Seek(0, SeekOrigin.Begin);
@@ -105,10 +110,12 @@ namespace KidProVision
 
         private async void verifySpeaker(Stream audioStream)
         {
+            //TALK - 17 Verify Speaker
             try
             {
                 statusResTxt.Text = "Verifying..";
                 Stopwatch sw = Stopwatch.StartNew();
+                //This compares it to the samples we aleady have on file for this user
                 Verification response = await _serviceClient.VerifyAsync(audioStream, _speakerId);
                 sw.Stop();
                 statusResTxt.Text = "Verification Done, Elapsed Time: " + sw.Elapsed;
@@ -141,39 +148,6 @@ namespace KidProVision
             }
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
-            
-
-        }
-
-
-        private void PhotoListSelection(object sender, RoutedEventArgs e)
-        {
-
-
-         }
-      
-
-        private void AddChildToPickUp(object sender, RoutedEventArgs e)
-        {
-           
-            }
-
-        private void RemoveShoppingCartItem(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void RemoveChild(object sender, RoutedEventArgs e)
-        {
-           
-        }
-
-        private void CheckOutChild(object sender, RoutedEventArgs e)
-        {
-           
-        }
 
         private void recordBtn_Click(object sender, RoutedEventArgs e)
         {

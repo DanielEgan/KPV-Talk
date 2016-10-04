@@ -35,8 +35,16 @@ namespace KidProVision
 
         string cameraPic;
         string filePic;
+
+        //TALK - 01 need subscription key
         //subscription key
-        string subscriptionKey = "c3c69602aecd442987f68ba9447a7be0";
+        //we need the subscription key from 
+
+        //You will need to create an environment variable with your subscription key
+        //or just add it here if you are not putting this in source control
+        //string subscriptionKey = <my subscription key>
+        string subscriptionKey =  Environment.GetEnvironmentVariable("FaceSubscriptionKey");
+
 
         public FaceVerify()
         {
@@ -47,6 +55,8 @@ namespace KidProVision
 
         }
 
+        //TALK - 02 observable colletion
+        //using this collection to hold the faceID's once recieved
         private ObservableCollection<Face> _foundFaceCollection = new ObservableCollection<Face>();
         public ObservableCollection<Face> FoundFaceCollection
         {
@@ -56,7 +66,8 @@ namespace KidProVision
             }
         }
 
-
+        //loads up all cameras connected to the computer
+        //I hide the combobox on the form and just select the first one.
         private void InitializeComboBox()
         {
             comboBox.ItemsSource = webCameraControl.GetVideoCaptureDevices();
@@ -67,6 +78,8 @@ namespace KidProVision
             }
         }
 
+
+        //TALK - 03 Starting Camera 
         private void StartCamera()
         {
             var cameraId = (WebCameraId)comboBox.SelectedItem;
@@ -74,30 +87,41 @@ namespace KidProVision
 
         }
 
+
+        //windows loaded starts the camera to show.
         private void WindowLoaded(object sender, RoutedEventArgs e)
         {
-
             StartCamera();
-
-
         }
 
 
 
-
+        //TALK - 04 - Verification
+        // This is used to verify and send up to cognitive services 
         private async void Verification_Click(object sender, RoutedEventArgs e)
         {
+            //settingn folder for pulling up image already saved (in assests folder)
             string root = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var imagePath = System.IO.Path.Combine(root, "../../Assets/");
+
+            //cameraPic is the image that will be taken by the camera
             cameraPic = imagePath + "picture.bmp";
+
+            //file Pic is the one already on file in assets folder
             filePic = imagePath + "daniel-egan.jpg";
             webCameraControl.GetCurrentImage().Save(cameraPic);
 
+            //calling checkForFace on the pic taken
             await CheckForFace(cameraPic);
             Log(String.Format("Request: Detecting in {0}", cameraPic));
+
+            //calling checkForFace on the photo on file
             await CheckForFace(filePic);
             Log(String.Format("Request: Detecting in {0}", filePic));
 
+
+            //TALK - 06 pull faceIDs and call verify
+            //Pull faceIDs from faces put into collection after calling CheckForFace
             var faceId1 = FoundFaceCollection[0].FaceId;
             var faceId2 = FoundFaceCollection[1].FaceId;
             await CompareFaces(faceId1, faceId2);
@@ -105,6 +129,9 @@ namespace KidProVision
 
         }
 
+
+        //TALK - 05 getting face attributes
+        //sending in path of file
         private async Task CheckForFace(string pickedImagePath)
         {
             // Create a filestream to read faces in images
@@ -114,23 +141,28 @@ namespace KidProVision
                 {
                     var imageInfo = UIHelper.GetImageInfoForRendering(pickedImagePath);
 
-                    //initialize service
+                    //initialize face service client 
                     var faceServiceClient = new FaceServiceClient(subscriptionKey);
 
+                    //You need to tell it what attributes you would like to pull from the image
                     var requiredFaceAttributes = new FaceAttributeType[] {
-                FaceAttributeType.Age,
-                FaceAttributeType.Gender,
-                FaceAttributeType.Smile,
-                FaceAttributeType.FacialHair,
-                FaceAttributeType.HeadPose,
-                FaceAttributeType.Glasses
-            };
+                        FaceAttributeType.Age,
+                        FaceAttributeType.Gender,
+                        FaceAttributeType.Smile,
+                        FaceAttributeType.FacialHair,
+                        FaceAttributeType.HeadPose,
+                        FaceAttributeType.Glasses
+                    };
 
                     //detect faces ( could be more than one ) 
+                    //send filestream
+                    //return FaceID (needed for verification)
+                    //optional return face landmarks
+                    //optional - attribues (noted above)
                     var faces = await faceServiceClient.DetectAsync(fileStream, returnFaceId: true, returnFaceLandmarks: true, returnFaceAttributes: requiredFaceAttributes);
 
                     // If it does not find any faces
-                    // right now program crashes if no faces
+                    // right now program crashes if no faces :) 
                     if (faces == null)
                     {
                         Log("No Faces were found in picture");
@@ -157,6 +189,9 @@ namespace KidProVision
             }
         }
 
+
+        //TALK - 07 CompareFaces
+        //passing in two faceIDs
         private async Task CompareFaces(string faceId1, string faceId2)
         {
             Log(String.Format("Request: Verifying face {0} and {1}", faceId1, faceId2));
@@ -164,9 +199,11 @@ namespace KidProVision
             // Call verify passing in faceIDs
             try
             {
+                //New up FaceServiceClient with subscriptionkey
                 var faceServiceClient = new FaceServiceClient(subscriptionKey);
                 var res = await faceServiceClient.VerifyAsync(Guid.Parse(faceId1), Guid.Parse(faceId2));
 
+                //check the result.IsIndentical
                 if (res.IsIdentical)
                 {
                     btnVoice.IsEnabled = true;
